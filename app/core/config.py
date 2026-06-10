@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     max_source_chars: int = Field(default=12000, alias="MAX_SOURCE_CHARS")
     max_image_size_mb: int = Field(default=5, alias="MAX_IMAGE_SIZE_MB")
     request_timeout_seconds: int = Field(default=15, alias="REQUEST_TIMEOUT_SECONDS")
+    ai_daily_request_limit: int = Field(default=1000, alias="AI_DAILY_REQUEST_LIMIT")
+    ai_rate_limit_per_minute: int = Field(default=120, alias="AI_RATE_LIMIT_PER_MINUTE")
     log_level: str = Field(default="info", alias="LOG_LEVEL")
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")

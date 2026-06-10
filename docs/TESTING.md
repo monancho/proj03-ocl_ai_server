@@ -40,19 +40,19 @@ python -m mypy app
 - 각 문항은 보기 4개를 가진다.
 - `answer_index`는 항상 0이다.
 - 잘못된 difficulty는 `DIFFICULTY_INVALID`를 반환한다.
-- 12,000자 초과 직접 입력은 `SOURCE_TEXT_TOO_LONG`을 반환한다.
+- 전처리 후 12,000자 초과 직접 입력은 `SOURCE_TEXT_TOO_LONG`을 반환한다.
 
 ### 웹사이트
 
 - 정적 HTML 본문을 추출한다.
-- 12,000자 초과 시 warning을 포함하고 앞부분만 사용한다.
+- 전처리 후 12,000자 초과 시 warning을 포함하고 앞부분만 사용한다.
 - 본문 추출 실패 시 `WEB_CONTENT_EXTRACT_FAILED`를 반환한다.
 
 ### YouTube
 
 - 유효한 YouTube URL만 허용한다.
 - 자막 없는 영상은 `YOUTUBE_TRANSCRIPT_NOT_FOUND`를 반환한다.
-- 자막 12,000자 초과 시 warning을 포함한다.
+- 전처리 후 자막 12,000자 초과 시 warning을 포함한다.
 
 ## 6. 이미지 moderation 테스트
 
@@ -60,7 +60,8 @@ python -m mypy app
 - 빈 파일은 `IMAGE_FILE_EMPTY`를 반환한다.
 - 5MB 초과 파일은 `IMAGE_FILE_TOO_LARGE`를 반환한다.
 - 허용되지 않는 MIME/확장자는 `IMAGE_TYPE_NOT_ALLOWED`를 반환한다.
-- low는 `allowed=true`, medium/high는 `allowed=false`를 반환한다.
+- low는 `action=allow`, medium은 `action=review`, high는 `action=block`을 반환한다.
+- 보호 제한 초과 시 429와 `AI_DAILY_USAGE_LIMIT_EXCEEDED` 또는 `AI_RATE_LIMIT_EXCEEDED`를 반환한다.
 
 ## 7. 수동 테스트 기준
 

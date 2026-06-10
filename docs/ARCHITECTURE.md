@@ -11,7 +11,7 @@
   │   ├─ Web Source Extractor
   │   └─ YouTube Transcript Extractor
   │        ↓
-  │   LangChain Structured Output
+  │   OpenAI SDK Structured Output
   │        ↓
   │   OpenAI Text Model
   │
@@ -28,7 +28,7 @@ MVP에서는 Quiz Service, Doodle Service와 실제 연동하지 않는다. AI �
 |---|---|---|
 | FastAPI | REST API, Swagger, 요청 라우팅 | 없음 |
 | Pydantic | Request/Response schema 검증 | 없음 |
-| LangChain | 문제 생성 chain, structured output 처리 | 없음 |
+| OpenAI SDK Structured Output | 문제 생성 structured output 처리 | 없음 |
 | OpenAI Text Model | 문제 생성 | 외부 API |
 | OpenAI Moderation API | 이미지 유해성 분류 | 외부 API |
 | httpx | 웹페이지 fetch, 외부 API 호출 | 없음 |
@@ -50,15 +50,15 @@ app/
 │  └─ error.py
 ├─ services/
 │  ├─ quiz_generation_service.py
+│  ├─ text_processing_service.py
 │  ├─ web_extract_service.py
 │  ├─ youtube_extract_service.py
 │  └─ image_moderation_service.py
-├─ chains/
-│  └─ quiz_chain.py
 └─ core/
    ├─ config.py
    ├─ auth.py
-   └─ errors.py
+   ├─ errors.py
+   └─ rate_limit.py
 ```
 
 ## 4. 문제 생성 처리 구조
@@ -67,8 +67,8 @@ app/
 |---:|---|---|
 | 1 | 입력 방식별 request 수신 | schema validation 오류 반환 |
 | 2 | 입력 검증 및 원문 텍스트 확보 | source별 오류 코드 반환 |
-| 3 | 12,000자 제한 적용 | 직접 입력은 오류, web/youtube는 warning 후 절단 |
-| 4 | LangChain chain 실행 | 1회 재생성 시도 |
+| 3 | 규칙 기반 전처리 후 12,000자 제한 적용 | 직접 입력은 오류, web/youtube는 warning 후 절단 |
+| 4 | OpenAI structured output 호출 | 1회 재생성 시도 |
 | 5 | Pydantic 구조 검증 | schema 오류 시 1회 재생성 |
 | 6 | 3문항/4보기/정답 1번 검증 | 실패 시 `QUIZ_GENERATION_FAILED` |
 
@@ -80,7 +80,7 @@ app/
 | 2 | 파일 존재, 크기, MIME type, 확장자 검증 |
 | 3 | base64 data URL 또는 image_url 방식으로 moderation 호출 |
 | 4 | flagged, category score 기반 `risk_level` 산출 |
-| 5 | low는 `allowed=true`, medium/high는 `allowed=false` 반환 |
+| 5 | low는 `action=allow`, medium은 `action=review`, high는 `action=block` 반환 |
 
 ## 6. 보안 경계
 
@@ -104,7 +104,8 @@ app/
 | 확장 항목 | 도입 시점 | 비고 |
 |---|---|---|
 | 서비스 백엔드 연동 | AI 서버 단독 검증 후 | Quiz/Doodle Backend에서 AI API 호출 |
-| 생성 횟수 제한 | 서비스 사용자 인증 도입 후 | AI 서버가 아니라 백엔드 서버 책임 |
+| 사용자별 생성 횟수 제한 | 서비스 사용자 인증 도입 후 | 백엔드 서버 책임 |
+| AI 서버 보호 제한 | MVP 운영 안정화 | in-memory 전체/endpoint 보호 제한, 재시작 시 초기화 |
 | LangGraph | 검증/재시도/분기 workflow가 복잡해질 때 | MVP 제외 |
 | RAG | 문서 검색 기반 문제 생성이 필요할 때 | MVP 제외 |
 | Queue | 긴 URL/대량 작업이 필요할 때 | Celery/RQ 등 후순위 |

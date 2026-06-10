@@ -4,7 +4,7 @@
 
 | 대상 | 배포/실행 위치 | 비고 |
 |---|---|---|
-| AI Server | Docker container | FastAPI + LangChain 기반 독립 API 서버 |
+| AI Server | Docker container | FastAPI + OpenAI structured output 기반 독립 API 서버 |
 | 외부 모델 API | OpenAI API | 문제 생성과 이미지 moderation 호출 |
 | 문서 | Markdown/DOCX/PDF | 기획/API/운영/체크리스트 산출물 |
 
@@ -57,6 +57,8 @@ docker run --env-file .env -p 8000:8000 ai-server:0.1.0
 | `MAX_SOURCE_CHARS` | 아니오 | 기본 12000 |
 | `MAX_IMAGE_SIZE_MB` | 아니오 | 기본 5 |
 | `REQUEST_TIMEOUT_SECONDS` | 아니오 | 기본 15 |
+| `AI_DAILY_REQUEST_LIMIT` | 아니오 | AI 서버 전체 in-memory 일일 보호 한도. 기본 1000 |
+| `AI_RATE_LIMIT_PER_MINUTE` | 아니오 | endpoint별 in-memory 분당 보호 한도. 기본 120 |
 | `LOG_LEVEL` | 아니오 | info/debug 등 |
 
 ## 6. 보안 정책
@@ -73,7 +75,8 @@ docker run --env-file .env -p 8000:8000 ai-server:0.1.0
 | 모델 비용 | 문제 생성 호출은 비용이 발생하므로 `question_count`를 받지 않고 3문항으로 고정한다. |
 | 긴 입력 | 웹/YouTube 추출 텍스트는 12,000자까지 사용한다. |
 | URL 처리 | fetch timeout을 적용해 서버가 오래 묶이지 않게 한다. |
-| Moderation | medium 이상은 차단한다. 사용자 메시지는 상세 카테고리 대신 일반 안내를 사용한다. |
+| Moderation | low는 허용, medium은 검토 필요, high는 차단한다. 사용자 메시지는 상세 카테고리 대신 일반 안내를 사용한다. |
+| 사용량 보호 | in-memory 보호 제한은 프로세스 재시작 시 초기화된다. 사용자별 quota와 결제 정책은 백엔드에서 처리한다. |
 | Swagger | 운영 공개 시 Swagger 접근 제한을 검토한다. MVP에서는 테스트 편의를 위해 제공한다. |
 
 ## 8. 배포 체크리스트

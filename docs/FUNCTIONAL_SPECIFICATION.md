@@ -22,7 +22,7 @@
 | 난이도 | `beginner`, `intermediate`, `advanced` 중 하나 |
 | 해설 | 각 문항마다 1~2문장 수준의 해설 포함 |
 | 생성 실패 | schema 오류, 문항 수 오류, 정답 위치 오류가 있으면 1회 재생성 |
-| 생성 횟수 제한 | AI 서버에서 구현하지 않음. 향후 서비스 백엔드 책임 |
+| 생성 횟수 제한 | 사용자별 quota는 백엔드 책임. AI 서버는 비용 폭주 방지용 전체 보호 제한만 적용 |
 
 ## 3. 직접 입력 문제 생성
 
@@ -31,7 +31,9 @@
 ```text
 사용자 본문 입력
 ↓
-AI Server 입력 길이 검증
+AI Server 공백/중복 줄 정규화
+↓
+전처리된 최종 학습 텍스트 기준 입력 길이 검증
 ↓
 문제 생성 모델 호출
 ↓
@@ -44,8 +46,8 @@ AI Server 입력 길이 검증
 
 | 검증 대상 | 규칙 | 실패 코드 |
 |---|---|---|
-| `content` | 필수 문자열, trim 후 최소 100자 권장 | `SOURCE_TEXT_TOO_SHORT` |
-| `content` | 최대 12,000자 | `SOURCE_TEXT_TOO_LONG` |
+| `content` | 전처리 후 최소 100자 권장 | `SOURCE_TEXT_TOO_SHORT` |
+| `content` | 전처리 후 최대 12,000자 | `SOURCE_TEXT_TOO_LONG` |
 | `difficulty` | `beginner`/`intermediate`/`advanced` 중 하나 | `DIFFICULTY_INVALID` |
 
 ## 4. 웹사이트 기반 문제 생성
@@ -61,7 +63,7 @@ URL 형식 검증
 ↓
 본문 추출 및 텍스트 정제
 ↓
-12,000자 제한 적용
+전처리된 최종 학습 텍스트 기준 12,000자 제한 적용
 ↓
 문제 생성 및 JSON 반환
 ```
@@ -70,7 +72,8 @@ URL 형식 검증
 
 - 일반 웹페이지 HTML만 지원한다.
 - PDF, 로그인 필요 페이지, 동적 렌더링 필수 페이지는 MVP에서 제외한다.
-- 본문이 12,000자를 초과하면 warning을 포함하고 앞부분 12,000자만 사용한다.
+- 전처리된 본문이 12,000자를 초과하면 `CONTENT_TRUNCATED` warning을 포함하고 앞부분 12,000자만 사용한다.
+- 비본문 요소를 제거하고 본문 구조가 약하거나 동적 렌더링이 의심되면 warning code를 포함한다.
 - 본문 추출에 실패하면 `WEB_CONTENT_EXTRACT_FAILED`를 반환한다.
 
 ## 5. YouTube 기반 문제 생성
@@ -86,7 +89,7 @@ YouTube URL 검증
 ↓
 자막 텍스트 추출
 ↓
-12,000자 제한 적용
+전처리된 자막 텍스트 기준 12,000자 제한 적용
 ↓
 문제 생성 및 JSON 반환
 ```
@@ -99,7 +102,9 @@ YouTube URL 검증
 | 음성 추출 | MVP 제외 |
 | Whisper | MVP 제외 |
 | 영상 길이 | 20분 이하 권장. 강제 차단은 구현 단계에서 결정 가능 |
-| 긴 자막 | 12,000자 초과 시 warning 포함 후 앞부분 12,000자 사용 |
+| 자막 언어 | ko 수동, ko 자동, en 수동/자동 순으로 시도 |
+| 자동/영어 자막 | 처리 가능하되 warning code 포함 |
+| 긴 자막 | 전처리 후 12,000자 초과 시 `CONTENT_TRUNCATED` warning 포함 후 앞부분 12,000자 사용 |
 | 출력 언어 | 자막 언어와 무관하게 한국어 문제로 반환 |
 
 ## 6. 이미지 유해성 검사
@@ -125,10 +130,10 @@ allowed true/false 반환
 | 허용 형식 | jpg, jpeg, png, webp |
 | 파일 크기 | 5MB 이하 |
 | 저장 여부 | AI 서버는 원본 이미지를 저장하지 않음 |
-| low | 허용 |
-| medium | 차단 |
-| high | 차단 |
-| 사용자 메시지 | 업로드할 수 없는 이미지입니다. 다른 이미지를 선택해 주세요. |
+| low | 허용, `action=allow` |
+| medium | 검토 필요, `action=review` |
+| high | 차단, `action=block` |
+| 사용자 메시지 | medium은 검토 안내, high는 업로드 불가 안내 |
 
 ## 7. 문제 품질 기준
 

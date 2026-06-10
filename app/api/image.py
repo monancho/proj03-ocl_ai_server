@@ -2,11 +2,15 @@ from fastapi import APIRouter, Depends, File, UploadFile
 
 from app.core.auth import verify_internal_api_key
 from app.core.errors import ApiError
+from app.core.rate_limit import verify_ai_usage_limit
 from app.schemas.image import ImageModerationResponse
 from app.services.image_moderation_service import ImageModerationService
 
 
-router = APIRouter(prefix="/ai/image", dependencies=[Depends(verify_internal_api_key)])
+router = APIRouter(
+    prefix="/ai/image",
+    dependencies=[Depends(verify_internal_api_key), Depends(verify_ai_usage_limit)],
+)
 
 
 @router.post("/moderate", response_model=ImageModerationResponse)

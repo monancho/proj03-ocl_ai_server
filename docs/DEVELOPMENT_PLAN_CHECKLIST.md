@@ -24,7 +24,8 @@
 | P0 | `/health`, API Key 인증, 직접 입력 문제 생성, 이미지 moderation |
 | P1 | 웹사이트 본문 추출, YouTube 자막 추출, 공통 오류 코드 |
 | P2 | Dockerfile, curl/Postman 예시, README 정리 |
-| P3 | LangGraph, RAG, 서비스 백엔드 연동, 생성 횟수 제한 |
+| P2.5 | 규칙 기반 전처리, warning/action 정책, AI 서버 보호 제한 |
+| P3 | LangGraph, RAG, 서비스 백엔드 연동, 사용자별 생성 횟수 제한 |
 
 ## 3. 테스트 체크리스트
 
@@ -82,7 +83,8 @@
 | 항목 | 설명 |
 |---|---|
 | 서비스 연동 | Quiz/Doodle Backend에서 AI 서버 호출 |
-| 생성 횟수 제한 | 사용자 인증과 DB 기반으로 백엔드 서버에서 구현 |
+| 사용자별 생성 횟수 제한 | 사용자 인증과 DB 기반으로 백엔드 서버에서 구현 |
+| AI 서버 보호 제한 | 전체 일일/분당 보호 제한은 in-memory MVP에서 시작하고 운영 환경에서는 공유 저장소 검토 |
 | 문제 검수 | 생성 후 정답/보기 중복/난이도 검증 node 추가 |
 | LangGraph | 검증/재시도/분기 workflow가 복잡해질 때 도입 |
 | RAG | 문서 업로드와 벡터 검색 기반 문제 생성 |

@@ -106,7 +106,7 @@ Response 200:
       "type": "web",
       "title": "페이지 제목",
       "url": "https://example.com/article",
-      "warning": "본문이 길어 앞부분 12,000자만 사용했습니다."
+      "warning": "CONTENT_TRUNCATED"
     },
     "questions": [],
     "usage": {
@@ -122,7 +122,8 @@ Response 200:
 - URL은 `http` 또는 `https`만 허용한다.
 - PDF, 로그인 필요 페이지, 동적 렌더링 페이지는 MVP 제외다.
 - 본문 추출 실패 시 `WEB_CONTENT_EXTRACT_FAILED`를 반환한다.
-- 본문 12,000자 초과 시 warning 포함 후 앞부분 12,000자만 사용한다.
+- 전처리된 본문 12,000자 초과 시 `CONTENT_TRUNCATED` warning 포함 후 앞부분 12,000자만 사용한다.
+- warning 예시는 `CONTENT_TRUNCATED`, `NO_MAIN_CONTENT_FOUND`, `DYNAMIC_PAGE_LIKELY`이다.
 
 ## 6. `POST /ai/quiz/generate/youtube`
 
@@ -143,7 +144,9 @@ Request:
 - 자막이 있을 때만 처리한다.
 - 자막이 없으면 `YOUTUBE_TRANSCRIPT_NOT_FOUND`를 반환한다.
 - 음성 추출/Whisper는 MVP 제외다.
-- 자막 12,000자 초과 시 warning 포함 후 앞부분 12,000자만 사용한다.
+- ko 수동, ko 자동, en 수동/자동 순으로 자막을 시도한다.
+- 영어 또는 자동 자막 사용 시 warning을 포함할 수 있다.
+- 전처리된 자막 12,000자 초과 시 `CONTENT_TRUNCATED` warning 포함 후 앞부분 12,000자만 사용한다.
 
 ## 7. `POST /ai/image/moderate`
 
@@ -163,8 +166,24 @@ Response 200 - 허용:
   "data": {
     "allowed": true,
     "risk_level": "low",
+    "action": "allow",
     "categories": [],
     "message": null
+  }
+}
+```
+
+Response 200 - 검토 필요:
+
+```json
+{
+  "success": true,
+  "data": {
+    "allowed": false,
+    "risk_level": "medium",
+    "action": "review",
+    "categories": ["violence"],
+    "message": "검토가 필요한 이미지입니다."
   }
 }
 ```
@@ -176,8 +195,9 @@ Response 200 - 차단:
   "success": true,
   "data": {
     "allowed": false,
-    "risk_level": "medium",
-    "categories": ["violence"],
+    "risk_level": "high",
+    "action": "block",
+    "categories": ["violence/graphic"],
     "message": "업로드할 수 없는 이미지입니다. 다른 이미지를 선택해 주세요."
   }
 }
@@ -202,8 +222,23 @@ Response 200 - 차단:
 | `IMAGE_MODERATION_FAILED` | 502 | 이미지 검사 실패 |
 | `QUIZ_GENERATION_FAILED` | 502 | 문제 생성 실패 |
 | `OUTPUT_SCHEMA_INVALID` | 502 | AI 응답 구조 불일치 |
+| `AI_DAILY_USAGE_LIMIT_EXCEEDED` | 429 | AI 서버 일일 보호 한도 초과 |
+| `AI_RATE_LIMIT_EXCEEDED` | 429 | AI 서버 분당 보호 한도 초과 |
 
-## 9. 문제 생성 결과 검증 규칙
+## 9. Warning / Action Code
+
+| Code | 의미 |
+|---|---|
+| `CONTENT_TRUNCATED` | 전처리된 학습 텍스트가 길어 앞부분만 사용 |
+| `NO_MAIN_CONTENT_FOUND` | 웹페이지에서 `main`/`article` 중심 본문 구조를 찾지 못함 |
+| `DYNAMIC_PAGE_LIKELY` | 정적 HTML만으로 본문 확보가 어려운 페이지로 의심 |
+| `YOUTUBE_AUTO_TRANSCRIPT_USED` | YouTube 자동 자막을 사용 |
+| `YOUTUBE_EN_TRANSCRIPT_USED` | 영어 자막을 사용해 한국어 문제를 생성 |
+| `allow` | 이미지 자동 허용 |
+| `review` | 이미지 검토 필요 |
+| `block` | 이미지 자동 차단 |
+
+## 10. 문제 생성 결과 검증 규칙
 
 | 대상 | 규칙 |
 |---|---|
