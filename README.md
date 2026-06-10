@@ -120,6 +120,21 @@ python -m pytest
 - 이미지 moderation은 `action=allow/review/block`을 반환합니다. `medium` risk는 `review`로 처리합니다.
 - AI 서버 보호용 사용량 제한은 in-memory 방식이며 프로세스 재시작 시 초기화됩니다. 사용자별 quota와 결제 정책은 백엔드 서버 책임입니다.
 
+## 백엔드 연동
+
+AI Server는 최종 사용자와 직접 통신하지 않고, Quiz/Doodle 백엔드가 내부 API로 호출하는 구조를 전제로 합니다.
+
+백엔드 연동 시 필요한 항목:
+
+- `AI_SERVER_BASE_URL`
+- `AI_SERVER_API_KEY`
+- endpoint별 timeout/retry 정책
+- quiz 결과 DB 저장
+- image moderation `action=allow/review/block` 처리
+- 사용자별 quota와 결제/권한 정책
+
+자세한 연동 지침은 `docs/BACKEND_INTEGRATION_GUIDE.md`를 참고합니다.
+
 ## 오류 응답 형식
 
 ```json
