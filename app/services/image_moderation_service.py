@@ -11,6 +11,12 @@ from app.schemas.image import ImageModerationData
 
 ALLOWED_IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
 ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp"}
+EXTENSION_TO_CONTENT_TYPE = {
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".png": "image/png",
+    ".webp": "image/webp",
+}
 BLOCKED_IMAGE_MESSAGE = "업로드할 수 없는 이미지입니다. 다른 이미지를 선택해 주세요."
 REVIEW_IMAGE_MESSAGE = "검토가 필요한 이미지입니다."
 HIGH_RISK_SCORE_THRESHOLD = 0.8
@@ -157,3 +163,16 @@ class ImageModerationService:
         extension = Path(filename or "").suffix.lower()
         if extension not in ALLOWED_IMAGE_EXTENSIONS or content_type not in ALLOWED_IMAGE_TYPES:
             raise ApiError(415, "IMAGE_TYPE_NOT_ALLOWED", "지원하지 않는 이미지 형식입니다.")
+        if EXTENSION_TO_CONTENT_TYPE[extension] != content_type:
+            raise ApiError(415, "IMAGE_TYPE_NOT_ALLOWED", "지원하지 않는 이미지 형식입니다.")
+        if self._detect_image_type(data) != content_type:
+            raise ApiError(415, "IMAGE_TYPE_NOT_ALLOWED", "지원하지 않는 이미지 형식입니다.")
+
+    def _detect_image_type(self, data: bytes) -> str | None:
+        if data.startswith(b"\xff\xd8\xff"):
+            return "image/jpeg"
+        if data.startswith(b"\x89PNG\r\n\x1a\n"):
+            return "image/png"
+        if len(data) >= 12 and data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+            return "image/webp"
+        return None

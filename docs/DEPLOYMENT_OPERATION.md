@@ -78,11 +78,13 @@ docker run --env-file .env -p 8000:8000 ai-server:0.1.0
 | Moderation | low는 허용, medium은 검토 필요, high는 차단한다. 사용자 메시지는 상세 카테고리 대신 일반 안내를 사용한다. |
 | 사용량 보호 | in-memory 보호 제한은 프로세스 재시작 시 초기화된다. 사용자별 quota와 결제 정책은 백엔드에서 처리한다. |
 | Swagger | 운영 공개 시 Swagger 접근 제한을 검토한다. MVP에서는 테스트 편의를 위해 제공한다. |
+| Request ID | 모든 응답의 `X-Request-Id`로 장애 요청을 추적한다. 본문과 secret은 로그에 남기지 않는다. |
 
 ## 8. 배포 체크리스트
 
 - `.env`에 `OPENAI_API_KEY`, `AI_SERVER_API_KEY` 등록
 - `/health` 응답 확인
+- `/ready` 응답 확인
 - Swagger `/docs` 접근 확인
 - text/web/youtube 문제 생성 API 테스트
 - 이미지 moderation API 테스트

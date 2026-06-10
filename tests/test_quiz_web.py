@@ -78,6 +78,19 @@ def test_web_quiz_rejects_invalid_url(monkeypatch) -> None:
     assert response.json()["error"]["code"] == "WEB_URL_INVALID"
 
 
+def test_web_quiz_blocks_localhost_url(monkeypatch) -> None:
+    monkeypatch.setenv("AI_SERVER_API_KEY", "test-internal-key")
+
+    response = client.post(
+        "/ai/quiz/generate/web",
+        headers=auth_headers(),
+        json={"url": "http://127.0.0.1:8000/private", "difficulty": "beginner"},
+    )
+
+    assert response.status_code == 400
+    assert response.json()["error"]["code"] == "WEB_URL_BLOCKED"
+
+
 def test_web_quiz_truncates_long_html_with_warning(monkeypatch) -> None:
     monkeypatch.setenv("AI_SERVER_API_KEY", "test-internal-key")
     monkeypatch.setattr(

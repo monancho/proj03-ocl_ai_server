@@ -57,6 +57,12 @@ Swagger UI:
 http://localhost:8000/docs
 ```
 
+Readiness:
+
+```text
+http://localhost:8000/ready
+```
+
 ## Docker 실행
 
 ```bash
@@ -116,8 +122,11 @@ python -m pytest
 
 - 퀴즈 입력은 공백/중복 줄을 정리한 최종 학습 텍스트 기준으로 12,000자 제한을 적용합니다.
 - 웹 추출 warning은 `CONTENT_TRUNCATED`, `NO_MAIN_CONTENT_FOUND`, `DYNAMIC_PAGE_LIKELY` 같은 코드로 반환합니다.
+- 웹 URL은 SSRF 위험이 있는 localhost, 사설 IP, link-local, metadata IP를 차단합니다.
 - YouTube 자막은 한국어 수동, 한국어 자동, 영어 수동/자동 순으로 시도하며 영어/자동 자막 사용 시 warning을 반환합니다.
 - 이미지 moderation은 `action=allow/review/block`을 반환합니다. `medium` risk는 `review`로 처리합니다.
+- 이미지 업로드는 확장자, MIME type, 파일 header signature를 함께 검증합니다.
+- 모든 응답은 추적용 `X-Request-Id` header를 포함합니다.
 - AI 서버 보호용 사용량 제한은 in-memory 방식이며 프로세스 재시작 시 초기화됩니다. 사용자별 quota와 결제 정책은 백엔드 서버 책임입니다.
 
 ## 백엔드 연동
@@ -134,6 +143,12 @@ AI Server는 최종 사용자와 직접 통신하지 않고, Quiz/Doodle 백엔�
 - 사용자별 quota와 결제/권한 정책
 
 자세한 연동 지침은 `docs/BACKEND_INTEGRATION_GUIDE.md`를 참고합니다.
+
+추가 참고 문서:
+
+- `docs/development/API_RESPONSE_SAMPLES.md`
+- `docs/development/BACKEND_CLIENT_EXAMPLES.md`
+- `docs/development/QUALITY_SAMPLE_CASES.md`
 
 ## 오류 응답 형식
 

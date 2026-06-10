@@ -1,4 +1,6 @@
 from html.parser import HTMLParser
+import ipaddress
+import socket
 from urllib.parse import urlparse
 
 import httpx
@@ -11,6 +13,8 @@ from app.services.text_processing_service import truncate_learning_text
 CONTENT_TRUNCATED = "CONTENT_TRUNCATED"
 DYNAMIC_PAGE_LIKELY = "DYNAMIC_PAGE_LIKELY"
 NO_MAIN_CONTENT_FOUND = "NO_MAIN_CONTENT_FOUND"
+BLOCKED_HOSTS = {"localhost", "localhost.localdomain"}
+METADATA_IPS = {"169.254.169.254"}
 SKIP_TAGS = {"script", "style", "noscript", "nav", "footer", "header", "aside", "svg"}
 BLOCK_TAGS = {
     "article",
@@ -120,16 +124,21 @@ class WebExtractService:
         parsed = urlparse(url)
         if parsed.scheme not in {"http", "https"} or not parsed.netloc:
             raise ApiError(400, "WEB_URL_INVALID", "올바른 웹 URL이 아닙니다.")
+        if self._is_blocked_host(parsed.hostname):
+            raise ApiError(400, "WEB_URL_BLOCKED", "허용되지 않는 웹 URL입니다.")
         if parsed.path.lower().endswith(".pdf"):
             raise ApiError(400, "WEB_URL_INVALID", "PDF 문서는 MVP 범위에서 지원하지 않습니다.")
 
     async def _fetch_html(self, url: str) -> str:
         try:
+            self._validate_resolved_host(url)
             async with httpx.AsyncClient(
                 timeout=self.settings.request_timeout_seconds
             ) as client:
                 response = await client.get(url, follow_redirects=True)
                 response.raise_for_status()
+                self._validate_url(str(response.url))
+                self._validate_resolved_host(str(response.url))
         except httpx.HTTPError as exc:
             raise ApiError(
                 422,
@@ -152,4 +161,45 @@ class WebExtractService:
         app_root_markers = ("id=\"root\"", "id=\"app\"", "__next", "data-reactroot")
         return len(text) < 500 and (
             script_count >= 3 or any(marker in normalized_html for marker in app_root_markers)
+        )
+
+    def _validate_resolved_host(self, url: str) -> None:
+        host = urlparse(url).hostname
+        if self._is_blocked_host(host):
+            raise ApiError(400, "WEB_URL_BLOCKED", "허용되지 않는 웹 URL입니다.")
+        if host is None:
+            raise ApiError(400, "WEB_URL_INVALID", "올바른 웹 URL이 아닙니다.")
+        try:
+            addresses = socket.getaddrinfo(host, None)
+        except socket.gaierror as exc:
+            raise ApiError(
+                422,
+                "WEB_CONTENT_EXTRACT_FAILED",
+                "해당 페이지에서 문제 생성을 위한 본문을 추출할 수 없습니다.",
+            ) from exc
+        for address in addresses:
+            ip = ipaddress.ip_address(address[4][0])
+            if self._is_blocked_ip(ip):
+                raise ApiError(400, "WEB_URL_BLOCKED", "허용되지 않는 웹 URL입니다.")
+
+    def _is_blocked_host(self, host: str | None) -> bool:
+        if host is None:
+            return False
+        normalized = host.lower().strip("[]")
+        if normalized in BLOCKED_HOSTS:
+            return True
+        try:
+            return self._is_blocked_ip(ipaddress.ip_address(normalized))
+        except ValueError:
+            return False
+
+    def _is_blocked_ip(self, ip: ipaddress.IPv4Address | ipaddress.IPv6Address) -> bool:
+        return (
+            ip.is_private
+            or ip.is_loopback
+            or ip.is_link_local
+            or ip.is_multicast
+            or ip.is_reserved
+            or ip.is_unspecified
+            or str(ip) in METADATA_IPS
         )

@@ -58,6 +58,7 @@ app/
    ├─ config.py
    ├─ auth.py
    ├─ errors.py
+   ├─ request_context.py
    └─ rate_limit.py
 ```
 
@@ -88,6 +89,7 @@ app/
 - 모든 AI 처리 API는 `X-Internal-Api-Key` 헤더를 요구한다.
 - `OPENAI_API_KEY`, `AI_SERVER_API_KEY`는 환경변수로만 관리한다.
 - 요청 본문, 파일명, URL은 로그에 최소한으로 기록한다.
+- 응답에는 `X-Request-Id`를 포함해 요청 추적이 가능하게 한다.
 - 이미지 파일은 AI 서버에 영구 저장하지 않는다.
 
 ## 7. 모델 선택 기준

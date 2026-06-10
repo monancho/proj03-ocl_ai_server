@@ -37,6 +37,8 @@ Frontend
 X-Internal-Api-Key: <AI_SERVER_API_KEY>
 ```
 
+모든 응답에는 추적용 `X-Request-Id` header가 포함된다. 백엔드는 장애 분석을 위해 이 값을 로그에 남길 수 있지만, API key나 사용자 원문 전체는 로그에 남기지 않는다.
+
 JSON API는 다음 header를 함께 사용한다.
 
 ```text

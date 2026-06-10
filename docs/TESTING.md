@@ -24,6 +24,8 @@ python -m mypy app
 
 - `GET /health`가 200을 반환한다.
 - 응답 body에 `status=ok`, `service=ai-server`, `version=0.1.0`이 포함된다.
+- `GET /ready`가 필수 환경변수 설정 여부를 반환한다.
+- 모든 응답에 `X-Request-Id` header가 포함된다.
 
 ## 4. Auth 테스트
 
@@ -45,6 +47,7 @@ python -m mypy app
 ### 웹사이트
 
 - 정적 HTML 본문을 추출한다.
+- localhost/private IP 등 SSRF 위험 URL은 `WEB_URL_BLOCKED`를 반환한다.
 - 전처리 후 12,000자 초과 시 warning을 포함하고 앞부분만 사용한다.
 - 본문 추출 실패 시 `WEB_CONTENT_EXTRACT_FAILED`를 반환한다.
 
@@ -60,6 +63,7 @@ python -m mypy app
 - 빈 파일은 `IMAGE_FILE_EMPTY`를 반환한다.
 - 5MB 초과 파일은 `IMAGE_FILE_TOO_LARGE`를 반환한다.
 - 허용되지 않는 MIME/확장자는 `IMAGE_TYPE_NOT_ALLOWED`를 반환한다.
+- 확장자/MIME/header signature가 맞지 않으면 `IMAGE_TYPE_NOT_ALLOWED`를 반환한다.
 - low는 `action=allow`, medium은 `action=review`, high는 `action=block`을 반환한다.
 - 보호 제한 초과 시 429와 `AI_DAILY_USAGE_LIMIT_EXCEEDED` 또는 `AI_RATE_LIMIT_EXCEEDED`를 반환한다.
 

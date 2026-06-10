@@ -19,6 +19,9 @@
 | `DEPLOYMENT_OPERATION.md` | Docker 실행, 환경변수, 보안/운영 주의사항 | 배포 담당자 |
 | `DEVELOPMENT_PLAN_CHECKLIST.md` | 구현 순서, 우선순위, 테스트 항목 | 개발자, 제출자 |
 | `TESTING.md` | 자동/수동/API 검증 기준 | 개발자, 테스터 |
+| `docs/development/API_RESPONSE_SAMPLES.md` | 대표 API 응답 예시 | 백엔드 개발자, 테스터 |
+| `docs/development/BACKEND_CLIENT_EXAMPLES.md` | 백엔드 client 호출 예시 | 백엔드 개발자 |
+| `docs/development/QUALITY_SAMPLE_CASES.md` | 수동 품질 검증 샘플 기준 | 테스터, 개발자 |
 
 ## 읽는 순서
 

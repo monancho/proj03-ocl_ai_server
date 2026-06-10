@@ -95,7 +95,7 @@ def test_image_moderation_uses_openai_multimodal_input() -> None:
         service.moderate,
         "sample.png",
         "image/png",
-        b"fake-image",
+        b"\x89PNG\r\n\x1a\nfake-image",
     )
 
     call = client.moderations.calls[0]

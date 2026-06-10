@@ -81,3 +81,28 @@
 - 실제 OpenAI 호출: 비용 발생 가능성이 있어 이번 단계에서는 수행하지 않고 기존 mock/fake client 테스트로 대체했습니다.
 - 실제 유해 이미지 샘플: 안전성과 테스트 데이터 취급 문제로 사용하지 않았습니다.
 - Docker run: 실제 `.env`를 컨테이너에 주입해야 하므로 build 검증으로 대체했습니다.
+
+## 2026-06-10 - Pre-Deployment Hardening
+
+| 명령 | 결과 | 비고 |
+|---|---|---|
+| `.\.venv\Scripts\python.exe -m pytest` | 성공 | 30 passed, 57 warnings |
+| `.\.venv\Scripts\python.exe -c "from app.main import app; print(app.title); print(len(app.openapi().get('paths', {})))"` | 성공 | FastAPI app import와 OpenAPI schema 생성 확인, path 6개 |
+| local server smoke test on port 8011 | 성공 | `/health` 200, `/ready` 200, `/docs` 200, auth failure 401, request id echo 확인 |
+| `docker build -t ai-server:0.1.0 .` | 성공 | Docker HEALTHCHECK 포함 image build 완료 |
+| secret pattern scan | 성공 | 실제 secret 패턴 미검출. 테스트용 placeholder만 확인 |
+
+## Pre-Deployment Hardening 검증 내용
+
+- `/ready` endpoint가 필수 환경변수 readiness를 확인하는지 테스트했습니다.
+- 모든 응답에 `X-Request-Id`가 포함되고, 요청 header 값이 유지되는지 테스트했습니다.
+- 웹 URL의 localhost/private IP 차단이 `WEB_URL_BLOCKED`로 동작하는지 테스트했습니다.
+- 이미지 확장자, MIME type, 파일 header signature 불일치가 `IMAGE_TYPE_NOT_ALLOWED`로 차단되는지 테스트했습니다.
+- Dockerfile에 healthcheck를 추가하고 build가 성공하는지 확인했습니다.
+- API 응답 샘플, 백엔드 client 예시, 품질 샘플 케이스 문서를 추가했습니다.
+
+## Pre-Deployment Hardening 미실행 / 대체 검증
+
+- 실제 OpenAI 호출: 비용 발생 가능성이 있어 mock/fake client 테스트로 대체했습니다.
+- 실제 유해 이미지 샘플: 안전성과 데이터 취급 문제로 사용하지 않았습니다.
+- Docker run: 실제 `.env` 주입이 필요하므로 build와 로컬 uvicorn smoke test로 대체했습니다.

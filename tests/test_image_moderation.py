@@ -6,6 +6,7 @@ from app.services.image_moderation_service import ImageModerationService
 
 
 client = TestClient(app)
+PNG_BYTES = b"\x89PNG\r\n\x1a\nnot-a-real-image-but-has-png-signature"
 
 
 def auth_headers() -> dict[str, str]:
@@ -35,7 +36,7 @@ def test_moderate_image_accepts_png(monkeypatch) -> None:
     response = client.post(
         "/ai/image/moderate",
         headers=auth_headers(),
-        files={"image": ("sample.png", b"not-a-real-image-but-non-empty", "image/png")},
+        files={"image": ("sample.png", PNG_BYTES, "image/png")},
     )
 
     body = response.json()
@@ -75,7 +76,7 @@ def test_moderate_image_returns_review_for_medium_risk(monkeypatch) -> None:
     response = client.post(
         "/ai/image/moderate",
         headers=auth_headers(),
-        files={"image": ("sample.png", b"not-a-real-image-but-non-empty", "image/png")},
+        files={"image": ("sample.png", PNG_BYTES, "image/png")},
     )
 
     body = response.json()
@@ -115,6 +116,19 @@ def test_moderate_image_rejects_unsupported_type(monkeypatch) -> None:
         "/ai/image/moderate",
         headers=auth_headers(),
         files={"image": ("sample.gif", b"non-empty", "image/gif")},
+    )
+
+    assert response.status_code == 415
+    assert response.json()["error"]["code"] == "IMAGE_TYPE_NOT_ALLOWED"
+
+
+def test_moderate_image_rejects_spoofed_png(monkeypatch) -> None:
+    monkeypatch.setenv("AI_SERVER_API_KEY", "test-internal-key")
+
+    response = client.post(
+        "/ai/image/moderate",
+        headers=auth_headers(),
+        files={"image": ("sample.png", b"not-a-real-png", "image/png")},
     )
 
     assert response.status_code == 415
