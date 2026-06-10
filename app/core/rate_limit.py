@@ -9,6 +9,9 @@ from app.core.config import get_settings
 from app.core.errors import ApiError
 
 
+DAILY_LIMIT_EXCLUDED_ENDPOINTS = {"/ai/image/moderate"}
+
+
 class InMemoryUsageGuard:
     def __init__(self) -> None:
         self._lock = Lock()
@@ -22,9 +25,14 @@ class InMemoryUsageGuard:
         today = datetime.now(UTC).date().isoformat()
         minute = int(time() // 60)
         daily_key = today
+        applies_to_daily_limit = endpoint not in DAILY_LIMIT_EXCLUDED_ENDPOINTS
 
         with self._lock:
-            if daily_limit > 0 and self._daily_counts[daily_key] >= daily_limit:
+            if (
+                applies_to_daily_limit
+                and daily_limit > 0
+                and self._daily_counts[daily_key] >= daily_limit
+            ):
                 raise ApiError(
                     429,
                     "AI_DAILY_USAGE_LIMIT_EXCEEDED",
@@ -41,7 +49,8 @@ class InMemoryUsageGuard:
                     "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.",
                 )
 
-            self._daily_counts[daily_key] += 1
+            if applies_to_daily_limit:
+                self._daily_counts[daily_key] += 1
             self._minute_windows[endpoint] = (current_minute, count + 1)
 
     def reset(self) -> None:

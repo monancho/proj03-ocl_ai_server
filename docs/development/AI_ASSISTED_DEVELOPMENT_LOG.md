@@ -457,3 +457,28 @@
 - SSRF 방어는 기본적인 URL/IP 차단이며, 운영 환경에서는 네트워크 레벨 egress 제한도 함께 적용해야 합니다.
 - `X-Request-Id`는 기본 로깅만 제공하므로 운영 로그 포맷/수집기는 배포 환경에서 별도 설정해야 합니다.
 - 이미지 header signature 검사는 기본 위장 방어이며, 실제 이미지 디코딩/재인코딩 검증은 후속 고도화 대상입니다.
+## 2026-06-10 - Daily Limit Policy Adjustment
+
+### 변경 요약
+
+- OpenAI 공식 Moderation 문서에서 `omni-moderation-latest`가 text/image input을 지원하고 moderation endpoint가 free to use임을 확인했습니다.
+- `AI_DAILY_REQUEST_LIMIT` 기본값을 100으로 낮췄습니다.
+- `/ai/image/moderate`는 daily request count에서 제외했습니다.
+- 이미지 moderation은 abuse 방어를 위해 endpoint별 `AI_RATE_LIMIT_PER_MINUTE` 보호는 계속 적용합니다.
+
+### 변경 파일
+
+- `app/core/config.py`
+- `app/core/rate_limit.py`
+- `tests/test_rate_limit.py`
+- `.env.example`
+- `README.md`
+- `docs/API_SPECIFICATION.md`
+- `docs/DEPLOYMENT_OPERATION.md`
+- `docs/TESTING.md`
+
+### 보안 확인
+
+- `.env` 실제 값은 읽거나 출력하지 않았습니다.
+- API Key, token, credential은 출력하지 않았습니다.
+- GitHub push는 수행하지 않았습니다.

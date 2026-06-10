@@ -65,7 +65,8 @@ python -m mypy app
 - 허용되지 않는 MIME/확장자는 `IMAGE_TYPE_NOT_ALLOWED`를 반환한다.
 - 확장자/MIME/header signature가 맞지 않으면 `IMAGE_TYPE_NOT_ALLOWED`를 반환한다.
 - low는 `action=allow`, medium은 `action=review`, high는 `action=block`을 반환한다.
-- 보호 제한 초과 시 429와 `AI_DAILY_USAGE_LIMIT_EXCEEDED` 또는 `AI_RATE_LIMIT_EXCEEDED`를 반환한다.
+- Quiz generation daily protection limit 초과 시 429와 `AI_DAILY_USAGE_LIMIT_EXCEEDED`를 반환한다. Image moderation은 daily count에서 제외되며 endpoint별 per-minute 보호 제한만 적용된다.
+- Per-minute 보호 제한 초과 시 429와 `AI_RATE_LIMIT_EXCEEDED`를 반환한다.
 
 ## 7. 수동 테스트 기준
 

@@ -37,7 +37,7 @@ FastAPI 기반 독립 AI API 서버입니다. 텍스트, 정적 웹페이지 본
 | `MAX_SOURCE_CHARS` | 입력 최대 글자 수, 기본 12000 |
 | `MAX_IMAGE_SIZE_MB` | 이미지 최대 크기 MB, 기본 5 |
 | `REQUEST_TIMEOUT_SECONDS` | 외부 요청 timeout 초, 기본 15 |
-| `AI_DAILY_REQUEST_LIMIT` | AI 서버 전체 in-memory 일일 요청 제한, 기본 1000 |
+| `AI_DAILY_REQUEST_LIMIT` | Quiz generation daily in-memory protection limit. Image moderation is excluded from this daily count. Default 100 |
 | `AI_RATE_LIMIT_PER_MINUTE` | endpoint별 in-memory 분당 요청 제한, 기본 120 |
 | `LOG_LEVEL` | 로그 레벨 |
 

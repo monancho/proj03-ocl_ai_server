@@ -57,7 +57,7 @@ docker run --env-file .env -p 8000:8000 ai-server:0.1.0
 | `MAX_SOURCE_CHARS` | 아니오 | 기본 12000 |
 | `MAX_IMAGE_SIZE_MB` | 아니오 | 기본 5 |
 | `REQUEST_TIMEOUT_SECONDS` | 아니오 | 기본 15 |
-| `AI_DAILY_REQUEST_LIMIT` | 아니오 | AI 서버 전체 in-memory 일일 보호 한도. 기본 1000 |
+| `AI_DAILY_REQUEST_LIMIT` | 아니오 | Quiz generation daily in-memory protection limit. Image moderation is excluded from this daily count. Default 100 |
 | `AI_RATE_LIMIT_PER_MINUTE` | 아니오 | endpoint별 in-memory 분당 보호 한도. 기본 120 |
 | `LOG_LEVEL` | 아니오 | info/debug 등 |
 

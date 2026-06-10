@@ -106,3 +106,16 @@
 - 실제 OpenAI 호출: 비용 발생 가능성이 있어 mock/fake client 테스트로 대체했습니다.
 - 실제 유해 이미지 샘플: 안전성과 데이터 취급 문제로 사용하지 않았습니다.
 - Docker run: 실제 `.env` 주입이 필요하므로 build와 로컬 uvicorn smoke test로 대체했습니다.
+## 2026-06-10 - Daily Limit Policy Adjustment
+
+| 명령 | 결과 | 비고 |
+|---|---|---|
+| `.\.venv\Scripts\python.exe -m pytest` | 성공 | 31 passed, 57 warnings |
+
+## 검증 내용
+
+- `AI_DAILY_REQUEST_LIMIT` 기본값을 100으로 낮췄습니다.
+- Quiz generation endpoint는 daily limit 초과 시 `AI_DAILY_USAGE_LIMIT_EXCEEDED`를 반환해야 합니다.
+- `/ai/image/moderate`는 daily limit count에서 제외되어야 합니다.
+- `/ai/image/moderate`는 endpoint별 `AI_RATE_LIMIT_PER_MINUTE` 보호는 계속 적용받습니다.
+- OpenAI 실제 호출은 비용/외부 의존성을 피하기 위해 mock/fake client 테스트로 대체합니다.

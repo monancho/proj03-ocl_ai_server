@@ -253,7 +253,7 @@ Response 200 - 차단:
 | `IMAGE_MODERATION_FAILED` | 502 | 이미지 검사 실패 |
 | `QUIZ_GENERATION_FAILED` | 502 | 문제 생성 실패 |
 | `OUTPUT_SCHEMA_INVALID` | 502 | AI 응답 구조 불일치 |
-| `AI_DAILY_USAGE_LIMIT_EXCEEDED` | 429 | AI 서버 일일 보호 한도 초과 |
+| `AI_DAILY_USAGE_LIMIT_EXCEEDED` | 429 | Quiz generation daily protection limit exceeded. Image moderation is excluded from the daily count. |
 | `AI_RATE_LIMIT_EXCEEDED` | 429 | AI 서버 분당 보호 한도 초과 |
 
 ## 9. Warning / Action Code
