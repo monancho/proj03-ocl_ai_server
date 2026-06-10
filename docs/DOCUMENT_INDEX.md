@@ -22,6 +22,7 @@
 | `docs/development/API_RESPONSE_SAMPLES.md` | 대표 API 응답 예시 | 백엔드 개발자, 테스터 |
 | `docs/development/BACKEND_CLIENT_EXAMPLES.md` | 백엔드 client 호출 예시 | 백엔드 개발자 |
 | `docs/development/QUALITY_SAMPLE_CASES.md` | 수동 품질 검증 샘플 기준 | 테스터, 개발자 |
+| `docs/development/SERVICE_INTEGRATION_PROMPTS.md` | 서비스별 백엔드 연동 작업 프롬프트 | 백엔드 개발자, AI 작업자 |
 
 ## 읽는 순서
 

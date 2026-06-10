@@ -149,6 +149,7 @@ AI Server는 최종 사용자와 직접 통신하지 않고, Quiz/Doodle 백엔�
 - `docs/development/API_RESPONSE_SAMPLES.md`
 - `docs/development/BACKEND_CLIENT_EXAMPLES.md`
 - `docs/development/QUALITY_SAMPLE_CASES.md`
+- `docs/development/SERVICE_INTEGRATION_PROMPTS.md`
 
 ## 오류 응답 형식
 
